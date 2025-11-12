@@ -1,0 +1,28 @@
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+.main-content {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.page-view {
+    flex-grow: 1;
+    overflow-y: auto;
+    
+}
+
+
+
+
+
+/* Responsive Styles (for smaller devices) */
+
+@media (max-width: 768px) {
+
+}

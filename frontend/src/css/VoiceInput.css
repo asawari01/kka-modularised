@@ -1,0 +1,52 @@
+.voice-search-box {
+    width: 100%;
+   
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.mic-btn {
+    height: 6rem;
+    width: 6rem;
+    border-radius: 50%;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: none;
+    background-color: rgb(88, 141, 211);
+}
+
+.mic-btn.listening, .mic-btn:hover {
+    cursor: pointer;
+    
+}
+
+.mic-btn:hover {
+    box-shadow: 0px 0px 3px rgba(0,0,0,0.7);
+}
+
+.mic-btn.listening {
+    background-color: rgb(50, 96, 157);
+    animation: pulse 1.5s infinite;
+}
+
+.mic-icon {
+    font-size: 3rem;
+}
+
+/* pulse animation */
+@keyframes pulse {
+
+    0% {
+        box-shadow: 0 0 0 0 rgba(37, 77, 156, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(170, 182, 205, 0.7);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(37, 77, 156, 0.7);
+    }
+}
