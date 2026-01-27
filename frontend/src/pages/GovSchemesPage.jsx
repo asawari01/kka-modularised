@@ -1,22 +1,29 @@
-import React from 'react';
+import React from "react";
+
+// We can add a CSS file later if needed
+// import '../css/GovSchemesPage.css';
 
 const GovSchemesPage = () => {
   return (
-    <div className='page-content'>
-
-      <div className='page-info-sec'>
-        <h1 className='title'>Government Schemes</h1>
-        <p className='info'>
-          look for goooovv schemes. go crazy. ahho haoo ahdo. 
-          oggaa booga moog choog. loof adjnnedcwjenwn dhenu.
-          loooompuuuuu jommpppuuncndv.
+    <div className="page-content">
+      <div className="page-main-content">
+        <h1 className="page-title">Government Schemes</h1>
+        <p className="page-subtitle">
+          Find the latest government schemes and subsidies available for
+          farmers.
         </p>
       </div>
 
-      <div className='page-main-content'>
-        
+      {/* We can reuse this CSS class from HomePage.css */}
+      <div className="gemini-result-container">
+        <div className="gemini-answer">
+          <p>
+            This page will list all relevant government schemes for farmers.
+            <br />
+            <br />
+          </p>
+        </div>
       </div>
-      
     </div>
   );
 };

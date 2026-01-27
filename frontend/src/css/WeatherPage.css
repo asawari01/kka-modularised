@@ -1,0 +1,288 @@
+/* --- Weather Page Specific Styles --- */
+
+/* --- NEW: Center the whole page --- */
+.page-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* This centers all page content */
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box; /* Ensures padding doesn't break layout */
+}
+
+/* --- NEW: Style the search bar container --- */
+.page-main-content {
+  width: 100%;
+  max-width: 900px; /* Match the cards container */
+  margin-bottom: 1.5rem;
+}
+
+/* --- NEW: Center the search inputs --- */
+.search-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto; /* Center the search box within its container */
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.weather-results-container {
+  width: 100%;
+  max-width: 900px; /* Max width for the cards */
+  /* This margin: ... auto; is what centers the container */
+  margin: 1rem auto;
+  padding: 0 1rem;
+}
+
+.weather-loading,
+.weather-error {
+  text-align: center;
+  font-size: 1.1rem;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.weather-loading {
+  color: #555;
+}
+
+.weather-error {
+  color: #d9534f; /* Red for errors */
+  background-color: #f2dede;
+  border: 1px solid #d9534f;
+}
+
+/* --- Weather Card Grid Layout --- */
+
+.weather-cards-grid {
+  display: grid;
+  /* --- CHANGED ---
+     Always 1 column, which will be centered by the container.
+  */
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+/* --- REMOVED ---
+   I have removed the @media query that tried
+   to create a 2-column layout on desktop.
+*/
+
+/* --- Base Weather Card Style --- */
+
+.weather-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+  border: 1px solid #eef2f7;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280; /* Gray text */
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.75rem;
+}
+
+/* --- Today Summary Card (Card 1) --- */
+
+.card-content-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.card-content-row img {
+  width: 75px;
+  height: 75px;
+}
+
+.card-content-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-content-col p {
+  margin: 0.15rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* --- Current Weather Card (Card 2) --- */
+
+/* --- REMOVED ---
+   I removed the @media query that made this
+   card span two columns.
+*/
+
+.current-weather-main {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping on small screens */
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.current-weather-temp {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-weather-temp img {
+  width: 100px;
+  height: 100px;
+}
+
+.temp-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.temp-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1;
+}
+.temp-unit {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+  vertical-align: top;
+}
+.temp-realfeel {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+.current-weather-details {
+  flex: 1; /* Take remaining space */
+  min-width: 200px; /* Ensure it has space */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+}
+
+/* --- CHANGED --- */
+.detail-row span:first-child {
+  /* color: #555; */ /* This is now handled by .detail-label */
+}
+.detail-row span:last-child {
+  color: #111;
+  font-weight: 600;
+}
+
+/* --- NEW: Style for icon + label --- */
+.detail-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between icon and text */
+  color: #555;
+}
+
+/* --- Forecast Card (Card 3) --- */
+
+.forecast-card p {
+  font-size: 1rem;
+  color: #333;
+  margin: 0.25rem 0;
+}
+
+/* --- Additions for WeatherPage.css --- */
+
+/* --- Forecast Card (Card 3) --- */
+
+.forecast-card p {
+  font-size: 1rem;
+  color: #333;
+  margin: 0.25rem 0;
+}
+
+/* --- NEW: Styles for the 5-day list --- */
+.forecast-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Space between each day */
+}
+
+.forecast-day {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr; /* 3 columns: Date, Icon, Temp */
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid #f3f4f6; /* Light separator */
+}
+
+.forecast-day:last-child {
+  border-bottom: none;
+}
+
+.forecast-day-date {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.forecast-day img,
+.forecast-day svg {
+  /* Center the icon */
+  margin: 0 auto;
+  width: 40px;
+  height: 40px;
+}
+
+.forecast-day-temp {
+  font-size: 0.9rem;
+  text-align: right;
+  color: #1f2937;
+}
+
+.forecast-day-temp b {
+  font-weight: 700;
+}
+
+/* On very small phones, stack the list items */
+@media (max-width: 400px) {
+  .forecast-day {
+    grid-template-columns: 1fr; /* Stack everything */
+    text-align: center;
+    gap: 0.25rem;
+  }
+  .forecast-day-temp {
+    text-align: center;
+  }
+}

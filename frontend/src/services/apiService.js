@@ -1,5 +1,7 @@
 // --- Central API Service ---
+// Handles all backend communication.
 
+// 1. Define backend base URL.
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 /**
@@ -20,6 +22,11 @@ const apiRequest = async (endpoint, options = {}) => {
       );
     }
 
+    // Handle 204 No Content (which has no body)
+    if (response.status === 204) {
+      return null;
+    }
+
     return await response.json();
   } catch (error) {
     console.error("Error in apiRequest:", error);
@@ -37,4 +44,36 @@ const fetchHelloMessage = () => {
   return apiRequest("/api/hello");
 };
 
-export default { fetchHelloMessage };
+/**
+ * Fetches weather data for a given city.
+ * @param {string} city - The city name (e.g., "London")
+ */
+const fetchWeather = (city) => {
+  // Encodes the city name for safe use in a URL
+  const encodedCity = encodeURIComponent(city);
+  // This calls GET /api/weather?city=London
+  return apiRequest(`/api/weather?city=${encodedCity}`);
+};
+
+/**
+ * --- NEW ---
+ * Posts a query to the Gemini backend route.
+ * @param {string} query - The user's search query
+ */
+const postGeminiQuery = (query) => {
+  return apiRequest("/api/gemini", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query: query }), // Send in the format { "query": "..." }
+  });
+};
+
+// --- CHANGED ---
+// Export all functions as properties of a single default object
+export default {
+  fetchHelloMessage,
+  fetchWeather,
+  postGeminiQuery, // <-- Added the new function
+};
