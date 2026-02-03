@@ -1,128 +1,258 @@
 import React, { useState, useEffect } from "react";
-// Import hooks to read the redirect state
 import { useLocation, useNavigate } from "react-router-dom";
-
-// Import your reusable components
 import TextInput from "../components/TextInput";
 import VoiceInput from "../components/VoiceInput";
-// We'll need the API service later
-// import apiService from '../services/apiService';
-
-// We'll need a CSS file later
-// import '../css/CropPricesPage.css';
+import apiService from "../services/apiService";
+import "../css/CropPricesPage.css";
 
 const CropPricesPage = () => {
-  // --- NEW: State to hold the crop name ---
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [priceData, setPriceData] = useState(null);
+  const [allRecords, setAllRecords] = useState([]);
 
-  // --- NEW: Get location and navigate objects ---
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- NEW: useEffect to check for redirected search ---
+  // Professional Currency Formatter
+  const formatCurrency = (val) => {
+    if (val === null || val === undefined || isNaN(val)) return "N/A";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(val);
+  };
+
   useEffect(() => {
-    // Check if we were redirected from HomePage with a crop
     const redirectedCrop = location.state?.crop;
-
     if (redirectedCrop) {
-      console.log(`CropPricesPage received crop: ${redirectedCrop}`);
-      // Set the search bar text
       setSearchQuery(redirectedCrop);
-      // Automatically run the search
-      handleSearch(redirectedCrop);
-
-      // IMPORTANT: Clear the state from location
-      // This prevents a loop if the user refreshes the page
+      handleSearch(redirectedCrop, location.state?.location);
       navigate(".", { replace: true, state: {} });
     }
-  }, [location.state, navigate]); // Depend on location.state
+  }, [location.state, navigate]);
 
   /**
-   * Main search handler for this page.
-   * --- PLACEHOLDER ---
-   * We will connect this to a real crop prices API in the future.
+   * Safe Day Name Extractor
+   * Converts "28/01/2026" -> "Wednesday"
    */
-  const handleSearch = async (query) => {
-    if (!query) {
-      setError("Please enter a crop name.");
-      return;
+  const getDayName = (dateStr) => {
+    try {
+      if (!dateStr) return "";
+      const [day, month, year] = dateStr.split("/");
+      const date = new Date(`${year}-${month}-${day}`);
+      return date.toLocaleDateString("en-IN", { weekday: "long" });
+    } catch (e) {
+      return "Market Day";
     }
+  };
 
-    setSearchQuery(query);
+  const handleSearch = async (query, userLocation) => {
+    if (!query) return;
+
     setLoading(true);
     setError(null);
-    setPriceData(null); // Clear old data
+    setPriceData(null);
+    setAllRecords([]);
 
-    console.log(`Searching for crop prices for: ${query}`);
+    try {
+      const records = await apiService.fetchCropPrices(query, userLocation);
 
-    // --- FUTURE: ---
-    // try {
-    //   const data = await apiService.fetchCropPrices(query);
-    //   setPriceData(data);
-    // } catch (err) {
-    //   setError('Failed to fetch crop prices.');
-    // } finally {
-    //   setLoading(false);
-    // }
+      if (!records || records.length === 0) {
+        setError(
+          "No records found. Try searching for standard crops like 'Onion' or 'Cotton'.",
+        );
+        return;
+      }
 
-    // --- TEMPORARY PLACEHOLDER ---
-    // We'll simulate a 1-second API call
-    setTimeout(() => {
+      /**
+       * OPTIMIZED DATA NORMALIZATION
+       * We use a 'Set' to filter for UNIQUE dates.
+       * Since the backend sorts by Price DESC, the first record we encounter for any date
+       * is automatically the Highest Price for that day.
+       */
+      const uniqueDates = [];
+      const seenDates = new Set();
+
+      for (const r of records) {
+        if (!seenDates.has(r.arrival_date)) {
+          uniqueDates.push(r);
+          seenDates.add(r.arrival_date);
+        }
+      }
+
+      setAllRecords(uniqueDates);
+
+      // Extract Latest & Previous Data
+      const latest = uniqueDates[0];
+      const hasHistory = uniqueDates.length > 1;
+      const prev = hasHistory ? uniqueDates[1] : latest;
+
+      const todayVal = Number(latest.modal_price) || 0;
+      const prevVal = Number(prev.modal_price) || 0;
+      const diffVal = todayVal - prevVal;
+
+      // Calculate Period Average
+      const totalModal = uniqueDates.reduce(
+        (sum, r) => sum + (Number(r.modal_price) || 0),
+        0,
+      );
+      const avgVal = totalModal / uniqueDates.length;
+
+      setPriceData({
+        today: todayVal,
+        yesterday: hasHistory ? prevVal : null,
+        difference: hasHistory ? diffVal : 0,
+        average: avgVal.toFixed(0),
+        market: latest.market,
+        district: latest.district,
+        date: latest.arrival_date,
+        min: latest.min_price,
+        max: latest.max_price,
+        hasHistory: hasHistory,
+      });
+    } catch (err) {
+      console.error("Mandi Search Error:", err);
+      setError("Market API is currently busy. Please try again in a moment.");
+    } finally {
       setLoading(false);
-      // For now, just show a placeholder message
-      setPriceData(`(Placeholder: Data for "${query}" will be shown here)`);
-    }, 1000);
+    }
   };
 
   return (
     <div className="page-content">
       <div className="page-main-content">
-        <h1 className="page-title">Crop Market Prices</h1>
-        <p className="page-subtitle">
-          Search for the latest mandi prices for your crop.
-        </p>
+        <h1 className="page-title">Ask for mandi rates for your crops!</h1>
+        <p className="page-subtitle">Live Mandi Rates & Historical Trends</p>
 
-        {/* This page has its own search bar */}
         <div className="search-box">
           <VoiceInput
             setQuery={setSearchQuery}
             onSearch={handleSearch}
           />
           <TextInput
-            query={searchQuery} // This will be pre-filled on redirect
+            query={searchQuery}
             setQuery={setSearchQuery}
             onSearch={handleSearch}
           />
         </div>
       </div>
 
-      {/* This is the results container for this page */}
       <div className="gemini-result-container">
-        {" "}
-        {/* We can reuse this CSS class */}
         {loading && (
           <div className="gemini-loading">
-            {" "}
-            {/* Reusing CSS */}
             <div className="spinner"></div>
-            <span>Fetching prices...</span>
+            <span>Analyzing historical trends...</span>
           </div>
         )}
+
         {error && (
           <div className="gemini-error">
-            {" "}
-            {/* Reusing CSS */}
             <p>{error}</p>
           </div>
         )}
+
         {priceData && (
-          <div className="gemini-answer">
-            {" "}
-            {/* Reusing CSS */}
-            <p>{priceData}</p>
+          <div className="price-report-card">
+            {/* 1. HEADER SECTION */}
+            <div className="card-header">
+              <div className="header-info">
+                {/* NEW: Flex row to put Crop + Location side-by-side */}
+                <div className="header-title-row">
+                  <h3>{searchQuery.toUpperCase()}</h3>
+
+                  {/* The Location Badge */}
+                  <span className="location-suffix">
+                    in {priceData.district}
+                  </span>
+                </div>
+
+                {/* Specific Mandi Name below */}
+                <span className="mandi-location">{priceData.market}</span>
+              </div>
+
+              <span className="report-date">UPDATED: {priceData.date}</span>
+            </div>
+
+            {/* 2. MAIN PRICE DISPLAY */}
+            <div className="price-main-section">
+              <div className="price-display">
+                <span className="label">Current Modal Price</span>
+                <span className="value">{formatCurrency(priceData.today)}</span>
+                <span className="unit">/ Quintal</span>
+              </div>
+
+              {/* Trend Pill - Only shows if history exists */}
+              <div
+                className={`trend-indicator ${
+                  priceData.difference >= 0 ? "up" : "down"
+                } ${!priceData.hasHistory ? "hidden" : ""}`}
+              >
+                <span className="trend-icon">
+                  {priceData.difference >= 0 ? "▲" : "▼"}
+                </span>
+                <span className="trend-text">
+                  {formatCurrency(Math.abs(priceData.difference))} vs last
+                  session
+                </span>
+              </div>
+            </div>
+
+            {/* 3. STATS GRID (Boxes for clear separation) */}
+            <div className="price-stats-grid">
+              <div className="stat-box">
+                <span className="stat-label">Previous Session</span>
+                <span className="stat-value">
+                  {priceData.hasHistory
+                    ? formatCurrency(priceData.yesterday)
+                    : "Data Unavailable"}
+                </span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-label">Period Average</span>
+                <span className="stat-value">
+                  {formatCurrency(priceData.average)}
+                </span>
+              </div>
+            </div>
+
+            {/* 4. HISTORY LIST (If available) */}
+            {allRecords.length > 1 && (
+              <div className="recent-history-section">
+                <h4 className="history-title">Price Timeline</h4>
+                <div className="recent-history-list">
+                  {allRecords.slice(0, 5).map((record, index) => (
+                    <div
+                      key={index}
+                      className="history-row"
+                    >
+                      <div className="history-date-group">
+                        <span className="day-name">
+                          {getDayName(record.arrival_date)}
+                        </span>
+                        <span className="history-date">
+                          {record.arrival_date}
+                        </span>
+                      </div>
+                      <span className="history-price">
+                        {formatCurrency(record.modal_price)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 5. FOOTER RANGE */}
+            <div className="price-range-info">
+              <p>
+                Trading Range:
+                <strong>{formatCurrency(priceData.min)}</strong>—
+                <strong>{formatCurrency(priceData.max)}</strong>
+              </p>
+            </div>
           </div>
         )}
       </div>

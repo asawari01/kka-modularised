@@ -7,8 +7,13 @@ import {
   FaRupeeSign,
   FaLandmark,
 } from "react-icons/fa";
+// IMPORT THE HOOK
+import { useLanguage } from "../context/LanguageContext";
 
 const SideBar = ({ isOpen, onClose }) => {
+  // Get the translation object (t)
+  const { t } = useLanguage();
+
   return (
     <nav
       className={`side-bar ${isOpen ? "open" : ""}`}
@@ -18,14 +23,15 @@ const SideBar = ({ isOpen, onClose }) => {
         className="nav-link"
         to="/home"
       >
-        <FaHome /> Home
+        <FaHome /> {t.nav.home}
       </Link>
+
       <Link
         className="nav-link"
         to="/weather"
         onClick={onClose}
       >
-        <FaCloudSun /> Weather
+        <FaCloudSun /> {t.nav.weather}
       </Link>
 
       <Link
@@ -33,14 +39,15 @@ const SideBar = ({ isOpen, onClose }) => {
         to="/cropPrices"
         onClick={onClose}
       >
-        <FaRupeeSign /> Crop Prices
+        <FaRupeeSign /> {t.nav.cropPrices}
       </Link>
+
       <Link
         className="nav-link"
         to="/governmentSchemes"
         onClick={onClose}
       >
-        <FaLandmark /> Government Schemes
+        <FaLandmark /> {t.nav.schemes}
       </Link>
     </nav>
   );

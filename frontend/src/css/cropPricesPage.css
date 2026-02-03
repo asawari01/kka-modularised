@@ -1,0 +1,301 @@
+/* --- Modern Wood & Cream Theme --- */
+:root {
+  --wood-primary: #5d4037;
+  --wood-light: #8d6e63;
+  --cream-bg: #fdfaf7;
+  --text-dark: #2c3e50;
+  --text-grey: #666;
+  --success-green: #27ae60;
+  --danger-red: #c0392b;
+}
+
+.price-report-card {
+  max-width: 650px;
+  margin: 2rem auto;
+  background: #ffffff;
+  border-radius: 16px;
+  /* The "Wood Accent" on the left */
+  border-left: 10px solid var(--wood-primary);
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* --- Header Section --- */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px dashed #ececec;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.header-info h3 {
+  margin: 0;
+  color: var(--wood-primary);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.mandi-location {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--text-grey);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.report-date {
+  font-size: 0.75rem;
+  color: #999;
+  font-weight: 600;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* --- Main Price Display (The Big Number) --- */
+.price-main-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.price-display {
+  display: flex;
+  align-items: baseline; /* Aligns text by their "feet" */
+  gap: 0.8rem; /* CRITICAL: Adds space between Label, Value, and Unit */
+  flex-wrap: wrap;
+}
+
+.price-display .label {
+  font-size: 1rem;
+  color: var(--text-grey);
+  font-weight: 500;
+}
+
+.price-display .value {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  line-height: 1;
+}
+
+.price-display .unit {
+  font-size: 1rem;
+  color: var(--wood-light);
+  font-weight: 600;
+}
+
+/* --- Trend Pill --- */
+.trend-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between icon and text */
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.trend-indicator.up {
+  background-color: #e8f5e9;
+  color: var(--success-green);
+}
+
+.trend-indicator.down {
+  background-color: #fbe9e7;
+  color: var(--danger-red);
+}
+
+.trend-indicator.hidden {
+  display: none;
+}
+
+/* --- Stats Grid (Yesterday / Average) --- */
+.price-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-box {
+  background: var(--cream-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #efebe9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--wood-primary);
+}
+
+/* --- Range Footer --- */
+.price-range-info {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+  text-align: center;
+  color: var(--text-grey);
+  font-size: 0.95rem;
+}
+
+.price-range-info strong {
+  color: var(--text-dark);
+  margin: 0 0.3rem;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 600px) {
+  .price-report-card {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .price-display .value {
+    font-size: 2.2rem;
+  }
+}
+/* Add this to your existing CSS file */
+
+.header-title-row {
+  display: flex;
+  align-items: baseline; /* Aligns the text on the same baseline */
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* The style for "in Akola" or "in Dindigul" */
+.location-suffix {
+  font-size: 1.1rem; /* Smaller than the main H3 */
+  color: var(--wood-light); /* Lighter wood color for hierarchy */
+  font-weight: 500;
+  text-transform: capitalize;
+  background-color: #f4ece7; /* Very subtle wood/cream background */
+  padding: 4px 12px;
+  border-radius: 20px; /* Pill shape */
+}
+
+/* Mobile adjustment */
+@media (max-width: 600px) {
+  .header-title-row {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .location-suffix {
+    font-size: 1rem;
+    margin-left: 0;
+  }
+}
+
+/* --- Empty State Improvements --- */
+
+.quick-actions-section {
+  margin-top: 2.5rem;
+  text-align: center;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.section-label {
+  font-size: 0.9rem;
+  color: #8d6e63; /* Wood Light */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.chips-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 3rem;
+}
+
+.crop-chip {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  color: #5d4037;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.crop-chip:hover {
+  background: #5d4037;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(93, 64, 55, 0.2);
+}
+
+.search-tips-card {
+  background: #fdfaf7; /* Cream background */
+  border-left: 4px solid #27ae60; /* Green accent */
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.tip-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.tip-text {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.example-query {
+  font-style: italic;
+  color: #5d4037;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -9,6 +9,8 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
  * @param {string} endpoint - API endpoint (e.g., "/api/hello")
  * @param {object} [options] - fetch options (method, headers, body)
  * @returns {Promise<any>} - JSON response
+ * Fetches live crop price data for a specific commodity.
+ * @param {string} crop - The crop name (e.g., "Onion")
  */
 const apiRequest = async (endpoint, options = {}) => {
   try {
@@ -18,7 +20,7 @@ const apiRequest = async (endpoint, options = {}) => {
       // Throw error if response is not successful
       const errorText = await response.text();
       throw new Error(
-        `API request failed with status ${response.status}: ${errorText}`
+        `API request failed with status ${response.status}: ${errorText}`,
       );
     }
 
@@ -70,10 +72,17 @@ const postGeminiQuery = (query) => {
   });
 };
 
+const fetchCropPrices = (crop) => {
+  const encodedCrop = encodeURIComponent(crop);
+  // This calls GET /api/crops/prices?crop=Onion
+  return apiRequest(`/api/crops/prices?crop=${encodedCrop}`);
+};
+
 // --- CHANGED ---
 // Export all functions as properties of a single default object
 export default {
   fetchHelloMessage,
   fetchWeather,
-  postGeminiQuery, // <-- Added the new function
+  postGeminiQuery,
+  fetchCropPrices,
 };

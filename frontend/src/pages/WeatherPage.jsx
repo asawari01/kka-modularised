@@ -13,6 +13,7 @@ import {
   CloudRain,
   CloudSnow,
   Zap,
+  MapPin, // New Icon for chips
 } from "lucide-react";
 
 // --- Helper Functions (Unchanged) ---
@@ -141,9 +142,7 @@ const WeatherIcon = ({ iconCode, size }) => {
       />
     ),
   };
-  if (iconMap[iconCode]) {
-    return iconMap[iconCode];
-  }
+  if (iconMap[iconCode]) return iconMap[iconCode];
   return (
     <img
       src={`http://openweathermap.org/img/wn/${iconCode}@2x.png`}
@@ -159,15 +158,21 @@ const WeatherPage = () => {
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // --- NEW: State to control what cards to show ---
-  const [displayMode, setDisplayMode] = useState("default"); // 'default', 'today', '5-day'
+  const [displayMode, setDisplayMode] = useState("default");
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- NEW: Refactored search logic into its own function ---
-  // This function ONLY fetches data.
+  // NEW: Quick Access Cities (Major Agriculture Hubs)
+  const POPULAR_CITIES = [
+    "Mumbai",
+    "Pune",
+    "Nashik",
+    "Nagpur",
+    "Akola",
+    "Amravati",
+  ];
+
   const fetchData = async (query) => {
     if (!query) {
       setError("Please enter a city name.");
@@ -179,7 +184,6 @@ const WeatherPage = () => {
 
     try {
       const data = await apiService.fetchWeather(query);
-      console.log("Weather data received:", data);
       setWeatherData(data);
     } catch (err) {
       console.error("Error fetching weather:", err);
@@ -193,43 +197,39 @@ const WeatherPage = () => {
     }
   };
 
-  // --- UPDATED: useEffect now reads duration and calls fetchData ---
   useEffect(() => {
     const redirectedCity = location.state?.city;
-    // Get the duration from the state, or use 'default'
     const redirectedDuration = location.state?.duration || "default";
 
     if (redirectedCity) {
-      console.log(
-        `WeatherPage received city: ${redirectedCity} and duration: ${redirectedDuration}`
-      );
       setSearchQuery(redirectedCity);
-      setDisplayMode(redirectedDuration); // Set the display mode
-      fetchData(redirectedCity); // Call the fetch function
-
+      setDisplayMode(redirectedDuration);
+      fetchData(redirectedCity);
       navigate(".", { replace: true, state: {} });
     }
-  }, [location.state, navigate]); // Removed fetchData from deps to avoid re-runs
+  }, [location.state, navigate]);
 
-  // --- UPDATED: This is now for MANUAL search from the search bar ---
-  // It resets the display mode to 'default' and calls fetchData.
   const handleSearch = (query) => {
     setSearchQuery(query);
-    setDisplayMode("default"); // Manual search always shows default view
+    setDisplayMode("default");
     fetchData(query);
+  };
+
+  // NEW: Handle Chip Click
+  const handleCityClick = (city) => {
+    setSearchQuery(city);
+    handleSearch(city);
   };
 
   return (
     <div className="page-content">
-      {/* 1. SEARCH SECTION (Unchanged) */}
       <div className="page-main-content">
         <h1 className="page-title">Check Your Local Weather</h1>
         <p className="page-subtitle">
-          Enter a city to get weather details relevant for agriculture.
+          Real-time forecasts to help you plan your farming activities.
         </p>
       </div>
 
-      {/* Note: onSearch now calls handleSearch (the manual search) */}
       <div className="search-box">
         <VoiceInput
           setQuery={setSearchQuery}
@@ -242,21 +242,61 @@ const WeatherPage = () => {
         />
       </div>
 
-      {/* 2. RESULTS SECTION (UPDATED with conditional logic) */}
+      {/* --- NEW: EMPTY STATE SECTION (Shown when no data) --- */}
+      {!loading && !weatherData && !error && (
+        <div className="quick-actions-section">
+          <span className="section-label">Popular Locations</span>
+
+          <div className="chips-container">
+            {POPULAR_CITIES.map((city) => (
+              <button
+                key={city}
+                className="city-chip"
+                onClick={() => handleCityClick(city)}
+              >
+                <MapPin size={16} /> {city}
+              </button>
+            ))}
+          </div>
+
+          <div className="weather-tips-card">
+            <div className="tip-header">
+              <CloudRain
+                size={24}
+                color="#0288d1"
+              />
+              <span>Farming Forecast Tip</span>
+            </div>
+            <p className="tip-text">
+              Planning to spray fertilizers? Always check the{" "}
+              <span className="highlight-text">Wind Speed</span> first. High
+              winds (greater than 15 km/h) can cause drift and waste your
+              expensive inputs.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* --- RESULTS SECTION --- */}
       <div className="weather-results-container">
-        {loading && <div className="weather-loading">Loading...</div>}
+        {loading && (
+          <div className="gemini-loading">
+            <div className="spinner"></div>
+            <span>Fetching forecast...</span>
+          </div>
+        )}
+
         {error && <div className="weather-error">{error}</div>}
 
         {weatherData && (
           <div className="weather-cards-grid">
-            {/* --- Card 1: Today's Summary --- */}
-            {/* Show if mode is 'default' OR 'today' */}
+            {/* Card 1: Today's Summary */}
             {(displayMode === "default" || displayMode === "today") && (
               <div className="weather-card today-summary-card">
                 <div className="card-header">
-                  <span>TODAY'S WEATHER</span>
+                  <span>TODAY'S OVERVIEW</span>
                   <span>
-                    {weatherData.name} - {formatDate(weatherData.current.dt)}
+                    {weatherData.name} • {formatDate(weatherData.current.dt)}
                   </span>
                 </div>
                 <div className="card-content-row">
@@ -265,71 +305,56 @@ const WeatherPage = () => {
                     size={75}
                   />
                   <div className="card-content-col">
-                    <p>{weatherData.daily[0].summary}</p>
-                    <p>
-                      <b>Hi: {weatherData.daily[0].temp.max.toFixed(1)}°</b>
+                    <p className="weather-summary-text">
+                      {weatherData.daily[0].summary}
                     </p>
-                    <p>
-                      <b>Lo: {weatherData.daily[0].temp.min.toFixed(1)}°</b>
-                    </p>
+                    <div className="temp-range">
+                      <span className="high-temp">
+                        High: {weatherData.daily[0].temp.max.toFixed(0)}°
+                      </span>
+                      <span className="low-temp">
+                        Low: {weatherData.daily[0].temp.min.toFixed(0)}°
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* --- Card 2: Current Weather --- */}
-            {/* Show if mode is 'default' OR 'today' */}
+            {/* Card 2: Current Conditions */}
             {(displayMode === "default" || displayMode === "today") && (
               <div className="weather-card current-weather-card">
                 <div className="card-header">
-                  <span>CURRENT WEATHER</span>
+                  <span>CURRENT CONDITIONS</span>
                   <span>{formatTime(weatherData.current.dt)}</span>
                 </div>
-                {/* ... (rest of card 2 is unchanged) ... */}
                 <div className="current-weather-main">
                   <div className="current-weather-temp">
                     <WeatherIcon
                       iconCode={weatherData.current.weather[0].icon}
-                      size={100}
+                      size={90}
                     />
                     <div className="temp-col">
                       <span className="temp-value">
-                        {weatherData.current.temp.toFixed(1)}°
-                        <span className="temp-unit">C</span>
+                        {weatherData.current.temp.toFixed(0)}°
                       </span>
                       <span className="temp-realfeel">
-                        RealFeel® {weatherData.current.feels_like.toFixed(1)}°
+                        Feels like {weatherData.current.feels_like.toFixed(0)}°
                       </span>
                     </div>
                   </div>
                   <div className="current-weather-details">
                     <div className="detail-row">
                       <span className="detail-label">
-                        <Wind size={18} />
-                        <span>Wind</span>
+                        <Wind size={18} /> Wind
                       </span>
                       <span>
                         {mpsToKmh(weatherData.current.wind_speed)} km/h
                       </span>
                     </div>
-                    {weatherData.current.wind_gust && (
-                      <div className="detail-row">
-                        <span className="detail-label">
-                          <Wind
-                            size={18}
-                            style={{ opacity: 0.7 }}
-                          />
-                          <span>Wind Gusts</span>
-                        </span>
-                        <span>
-                          {mpsToKmh(weatherData.current.wind_gust)} km/h
-                        </span>
-                      </div>
-                    )}
                     <div className="detail-row">
                       <span className="detail-label">
-                        <Droplet size={18} />
-                        <span>Humidity</span>
+                        <Droplet size={18} /> Humidity
                       </span>
                       <span>{weatherData.current.humidity}%</span>
                     </div>
@@ -338,15 +363,12 @@ const WeatherPage = () => {
               </div>
             )}
 
-            {/* --- Card 3: 5-Day Forecast (UPGRADED) --- */}
-            {/* Show if mode is 'default' OR '5-day' */}
+            {/* Card 3: 5-Day Forecast */}
             {(displayMode === "default" || displayMode === "5-day") && (
               <div className="weather-card forecast-card">
                 <div className="card-header">
                   <span>5-DAY FORECAST</span>
                 </div>
-                {/* --- NEW LOOP --- */}
-                {/* This maps over the first 5 days and creates a list */}
                 <div className="forecast-list">
                   {weatherData.daily.slice(0, 5).map((day) => (
                     <div
@@ -354,16 +376,17 @@ const WeatherPage = () => {
                       key={day.dt}
                     >
                       <span className="forecast-day-date">
-                        {/* Show "Tomorrow" for the second day, else the date */}
                         {new Date(day.dt * 1000).toDateString() ===
                         new Date(Date.now() + 86400000).toDateString()
                           ? "Tomorrow"
                           : formatDate(day.dt)}
                       </span>
-                      <WeatherIcon
-                        iconCode={day.weather.icon}
-                        size={40}
-                      />
+                      <div className="forecast-icon-wrapper">
+                        <WeatherIcon
+                          iconCode={day.weather.icon}
+                          size={35}
+                        />
+                      </div>
                       <span className="forecast-day-temp">
                         <b>{day.temp.max.toFixed(0)}°</b> /{" "}
                         {day.temp.min.toFixed(0)}°

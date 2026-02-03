@@ -4,98 +4,95 @@ import TextInput from "../components/TextInput";
 import VoiceInput from "../components/VoiceInput";
 import "../css/HomePage.css";
 import apiService from "../services/apiService";
+import { Lightbulb } from "lucide-react";
+// IMPORT THE HOOK
+import { useLanguage } from "../context/LanguageContext";
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
   const [geminiResult, setGeminiResult] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // GET TRANSLATIONS
+  const { t } = useLanguage();
+
   const navigate = useNavigate();
 
-  const [backendMessage, setBackendMessage] = useState("");
+  // --- TIP OF THE DAY (Static for now, can be translated later) ---
+  const TIPS = [
+    "Rotate your crops (e.g., Soybean → Wheat) to replenish soil Nitrogen naturally.",
+    "Water your crops early in the morning to reduce evaporation loss.",
+    "Test your soil pH every 3 years to save money on unnecessary fertilizers.",
+    "Mulching can reduce water usage by up to 30% in dry seasons.",
+  ];
+
+  const [dailyTip, setDailyTip] = useState("");
 
   useEffect(() => {
-    const getMessage = async () => {
-      try {
-        const data = await apiService.fetchHelloMessage();
-        setBackendMessage(data.message);
-      } catch (error) {
-        console.error("Error fetching backend message:", error);
-        setBackendMessage("Failed to fetch test message.");
-      }
-    };
-    getMessage();
+    setDailyTip(TIPS[Math.floor(Math.random() * TIPS.length)]);
   }, []);
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
 
     if (!query) {
-      setError("Please enter a question.");
+      setError(t.home.placeholder);
       return;
     }
-
-    console.log("Searching for:", query);
 
     setIsLoading(true);
     setGeminiResult("");
     setError(null);
 
     try {
-      // Call the Gemini API
       const data = await apiService.postGeminiQuery(query);
 
-      // Smart Intent Logic
       try {
+        // Parse the JSON string received from backend
         const parsedAnswer = JSON.parse(data.answer);
 
+        console.log("Parsed Intent:", parsedAnswer);
+
         switch (parsedAnswer.intent) {
-          // --- CHANGED ---
           case "WEATHER":
-            // We now also pass the duration, defaulting to 'default'
             const duration = parsedAnswer.duration || "default";
-            console.log(
-              `Redirecting to WeatherPage with city: ${parsedAnswer.city} and duration: ${duration}`
-            );
             navigate("/weather", {
-              state: {
-                city: parsedAnswer.city,
-                duration: duration,
-              },
+              state: { city: parsedAnswer.city, duration: duration },
             });
-            return;
+            break;
 
           case "CROP_PRICES":
-            console.log(
-              `Redirecting to CropPricesPage with crop: ${parsedAnswer.crop}`
-            );
-            navigate("/cropPrices", { state: { crop: parsedAnswer.crop } });
-            return;
+            const loc =
+              parsedAnswer.location === "null" ? null : parsedAnswer.location;
+            navigate("/cropPrices", {
+              state: { crop: parsedAnswer.crop, location: loc },
+            });
+            break;
 
           case "GOV_SCHEMES":
-            console.log("Redirecting to GovSchemesPage");
-            navigate("/governmentSchemes");
-            return;
+            navigate("/governmentSchemes", {
+              state: { searchQuery: parsedAnswer.search_term || "" },
+            });
+            break;
+
+          case "GENERAL_INFO":
+            // Show the translated answer directly on Home Page
+            setGeminiResult(parsedAnswer.answer);
+            break;
 
           default:
-            console.log("Received unknown JSON, treating as text.");
-            setGeminiResult(data.answer);
+            // Fallback for unexpected intents
+            setGeminiResult(JSON.stringify(parsedAnswer));
         }
       } catch (e) {
-        // Not JSON, so it's a normal text answer
-        console.log("Not a JSON intent, treating as normal answer.");
-
-        if (data.answer.includes("I am an agricultural assistant")) {
-          setError(data.answer);
-        } else {
-          setGeminiResult(data.answer);
-        }
+        console.error("JSON Parsing failed:", e);
+        // If it's not JSON, just show the text (Safety net)
+        setGeminiResult(data.answer);
       }
     } catch (err) {
-      console.error("Error fetching Gemini response:", err);
-      setError("Sorry, I couldn't get a response. Please try again.");
+      console.error("API Error:", err);
+      setError(t.home.error);
     } finally {
       setIsLoading(false);
     }
@@ -103,37 +100,47 @@ const HomePage = () => {
 
   return (
     <div className="page-content">
-      {/* This is your existing info section */}
       <div className="page-info-sec">
-        <h1 className="title">Welcome to Kisaan Ki Aawaaz!</h1>
-        <p className="info">
-          Your one stop agriculture information solution. Look up anything
-          related to agriculture. From current market prices to latest
-          government schemes, we have got it all covered.
-        </p>
+        {/* TRANSLATED TITLE & SUBTITLE */}
+        <h1 className="title">{t.home.title}</h1>
+        <p className="info">{t.home.subtitle}</p>
       </div>
 
-      {/* This is your existing main content section */}
       <div className="page-main-content">
         <div className="search-box">
+          {/* We will update VoiceInput next to accept 'lang' */}
           <VoiceInput
             setQuery={setSearchQuery}
             onSearch={handleSearch}
           />
-
           <TextInput
             query={searchQuery}
             setQuery={setSearchQuery}
             onSearch={handleSearch}
+            placeholder={t.home.placeholder} // TRANSLATED PLACEHOLDER
           />
         </div>
 
-        {/* This section is unchanged */}
+        {!geminiResult && !isLoading && !error && (
+          <div className="suggestions-section">
+            <div className="daily-tip-card">
+              <div className="tip-header">
+                <Lightbulb
+                  size={24}
+                  color="#f59e0b"
+                />
+                <span>{t.home.tipTitle}</span>
+              </div>
+              <p className="tip-content">{dailyTip}</p>
+            </div>
+          </div>
+        )}
+
         <div className="gemini-result-container">
           {isLoading && (
             <div className="gemini-loading">
               <div className="spinner"></div>
-              <span>Thinking...</span>
+              <span>{t.home.loading}</span>
             </div>
           )}
           {error && (
